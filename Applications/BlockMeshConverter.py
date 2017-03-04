@@ -33,9 +33,10 @@ go over one line
     def run(self):
         print "Program is running"
         mesh=BlockMesh2D('blockMeshDict2D')
-        mesh.numberVertices('Number:')
-        print mesh.convertVertices()
-
+        # mesh.numberVertices('Number:')
+        # print mesh.convertVertices()
+        print mesh.convertBlocks()
+        # mesh.get2DBlocks() 
         # for k in mesh.getVertexes():
             # print k[0],k[1]
 
