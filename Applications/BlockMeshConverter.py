@@ -38,7 +38,8 @@ go over one line
         # print mesh.convertVertices()
         # print mesh.convertBlocks()
         # print mesh.convertEdges()      
-        print mesh.convertBoundaries()
+        # print mesh.convertBoundaries()
+        print mesh.convert2DBlockMesh()
         # for item in mesh.convertBoundaries():
             # print item
  

@@ -23,22 +23,22 @@ class BlockMeshEdge(object):
 
     def __repr__(self):
         result=""
-        if self.Type=='spline':
+        if self.edgeType=='spline':
             result='\t'+"spline"+' '+str(self.start)+' '+str(self.end)+"\n\t("
             for point in  self.points:
                 result+='\n\t\t\t'+"("+' '.join(str(n) for n in point)+ ")"
             result+='\n\t'+")"
-        elif self.Type=='arc':
+        elif self.edgeType=='arc':
             result='\t'+"arc"+' '+str(self.start)+' '+str(self.end)+"  ("+' '.join(str(n) for n in self.center)+ ")"
         return result
     def __str__(self):
         result=""
-        if self.Type=='spline':
+        if self.edgeType=='spline':
             result='\t'+"spline"+' '+str(self.start)+' '+str(self.end)+"\n\t("
             for point in  self.points:
                 result+='\n\t\t\t'+"("+' '.join(str(n) for n in point)+ ")"
             result+='\n\t'+")"
-        elif self.Type=='arc':
+        elif self.edgeType=='arc':
             result='\t'+"arc"+' '+str(self.start)+' '+str(self.end)+"  ("+' '.join(str(n) for n in self.center)+ ")"
         return result
 class BlockMeshBoundary(object):
@@ -68,6 +68,23 @@ class BlockMesh2D(FileBasisBackup):
         """
         FileBasisBackup.__init__(self,name,backup=backup)
         self.parsedBlockMesh=ParsedBlockMeshDict(name)
+        self.vertexNum=len(self.parsedBlockMesh["vertices"])
+
+    def convert2DBlockMesh(self):
+        newMesh=self._get2DMesh()
+        newMesh=self.convertVertices(newMesh)
+        newMesh=self.convertBlocks(newMesh)
+        newMesh=self.convertEdges(newMesh)
+        newMesh=self.convertBoundaries(newMesh)
+        return self.__endProcess(newMesh,True)
+
+    def _get2DMesh(self):
+        mesh=""
+        l=self.__startProcess()
+        while l.read(self.fh):
+            mesh+=l.line+'\n'
+        return mesh
+
     def _getVertexes(self):
         """Get a dictionary with the 3 components of each vertex as keys
         and the 'raw' line as the value"""
@@ -101,6 +118,7 @@ class BlockMesh2D(FileBasisBackup):
 
     def _get3DVertexes(self):
         verticeslist=self._get2DVertexes()
+
         vertices=copy.deepcopy(verticeslist)
         newvertices=list()
         for vertice in vertices:
@@ -148,8 +166,8 @@ class BlockMesh2D(FileBasisBackup):
                     pointsList.append(edgepoint+[0])
                 newEdgesList.append(BlockMeshEdge(edge.start+3,edge.end+3,edge.center,pointsList))
             if edge.edgeType=='arc':
-                newEdgesList.append(BlockMeshEdge(edge.start,edge.end,edge.center+[5],pointsList))
-                newEdgesList.append(BlockMeshEdge(edge.start+3,edge.end+3,edge.center+[0],pointsList)
+                newEdgesList.append(BlockMeshEdge(edge.start,edge.end,edge.center+[0],None))
+                newEdgesList.append(BlockMeshEdge(edge.start+self.vertexNum,edge.end+self.vertexNum,edge.center+[5],None)
 )
         return newEdgesList
     def _get2DBoundaries(self):
@@ -175,60 +193,66 @@ class BlockMesh2D(FileBasisBackup):
         for boundary  in boundariesList:
             boundaryFaces=list()
             for face in boundary.faces:
-                face=face+face
+                newFace=list()
+                for point in reversed(face):
+                    newFace.append(point+self.vertexNum)
+                face=face+newFace
                 boundaryFaces.append(face)
 
             newBoundariesList.append(BlockMeshBoundary(boundary.name,boundary.boundaryType,boundaryFaces))
         return newBoundariesList
-    def convertBoundaries(self):
+    def convertBoundaries(self,mesh):
         boundariesList=self._get3DBoundaries()
-        l=self.__startProcess()
+        # l=self.__startProcess()
         inBoundary=False
         inFace=False
         startPattern=re.compile("^\s*boundary")
         facestartPattern=re.compile("^\s*faces")
         endPattern=re.compile("^\s*\);")
         newMesh=""
-        while l.read(self.fh):
-            toPrint=l.line
+        for line in  mesh.splitlines():
+            toPrint=line
             if not inBoundary:
-                if startPattern.match(l.line):
+                if startPattern.match(line):
                     toPrint+="\n("
                     inBoundary=True
             else:
                 toPrint=""
                 if not inFace:
-                    if facestartPattern.match(l.line):
+                    if facestartPattern.match(line):
                         inFace=True
-                    if endPattern.match(l.line):
+                    if endPattern.match(line):
                         for boundary in reversed(boundariesList):
-                           toPrint="\n"+str(boundary)+'\n' +toPrint
+                           toPrint=str(boundary)+'\n' +toPrint
                         inBoundary=False
+                        toPrint+='\n);'
                 else:
-                    if endPattern.match(l.line):
+                    if endPattern.match(line):
                             inFace=False
                     else:
                         newMesh=newMesh.rstrip()
             newMesh+=toPrint+"\n"
         return newMesh
-    def convertEdges(self):
+    def convertEdges(self,mesh):
         newEdgesList=self._get3DEdges()
-        l=self.__startProcess()
+        # l=self.__startProcess()
         inBlock=False
         startPattern=re.compile("^\s*edges")
         endPattern=re.compile("^\s*\);")
         edgePattern=re.compile("(^\s*edges)\s(\s*)(\);)",re.MULTILINE)
         newMesh=""
-        while l.read(self.fh):
-            toPrint=l.line
+        for line in  mesh.splitlines():
+            toPrint=line
             if not inBlock:
-                if startPattern.match(l.line):
+                if startPattern.match(line):
                     toPrint+="\n("
                     inBlock=True
             else:
-                if endPattern.match(l.line):
+                if endPattern.match(line):
+                    toPrint='\n'+toPrint
                     for edge in reversed(newEdgesList):
-                       toPrint="\n"+str(edge)+'\n' +toPrint
+                       toPrint='\n'+str(edge)+toPrint
+                    toPrint="\n"+toPrint
                     inBlock=False
                 else:
                     toPrint=""
@@ -236,12 +260,15 @@ class BlockMesh2D(FileBasisBackup):
             newMesh+=toPrint+"\n"
         return newMesh
 
-    def convertBlocks(self):
+    def convertBlocks(self,mesh):
         blocksList=self._get2DBlocks()
         tempBloksList=copy.deepcopy(blocksList)
         newBlocksList=list()
         for block in tempBloksList:
-            block=block+block
+            tmpBlock=list()
+            for point in block:
+                tmpBlock.append(point+self.vertexNum)
+            block=block+tmpBlock
             newBlocksList.append(block)
         startPattern=re.compile("^\s*blocks")
         endPattern=re.compile("^\s*\);")
@@ -251,16 +278,16 @@ class BlockMesh2D(FileBasisBackup):
         l=self.__startProcess()
         newMesh=""
         count=0
-        while l.read(self.fh):
-            toPrint=l.line
+        for line in  mesh.splitlines():
+            toPrint=line
             if not inBlock:
-                if startPattern.match(l.line):
+                if startPattern.match(line):
                     inBlock=True
             else:
-                if endPattern.match(l.line):
+                if endPattern.match(line):
                     inBlock=False
                 else:
-                    m=hexPattern.match(l.line)
+                    m=hexPattern.match(line)
                     if m!=None:
                         g=m.groups()
                         toPrint="\t %s %s %s%s %s%s" % (g[0],"("+' '.join(map(str,newBlocksList[count]))+")",g[2]+" 1",g[3],g[4]+" 1",g[5])
@@ -268,7 +295,7 @@ class BlockMesh2D(FileBasisBackup):
             newMesh+=toPrint+"\n"
         return self.__endProcess(newMesh)
 
-    def convertVertices(self):
+    def convertVertices(self, mesh):
         """Remove comments after vertices"""
 
         startPattern=re.compile("^\s*vertices")
@@ -278,28 +305,27 @@ class BlockMesh2D(FileBasisBackup):
         inVertex=False
         newMesh=""
         stringVert=""
-        l=self.__startProcess()
+        # l=self.__startProcess()
         count=0
-        while l.read(self.fh):
-            toPrint=l.line
+        for line in  mesh.splitlines():
+            toPrint=line
             if not inVertex:
-                if startPattern.match(l.line):
+                if startPattern.match(line):
                     inVertex=True
-            elif endPattern.match(l.line):
-                print newvertices
+            elif endPattern.match(line):
                 for vert in newvertices:
                     stringVert+="\t(".expandtabs(4)+' '.join(str(e) for e in vert)+")\n"
                 toPrint=stringVert+toPrint
                 inVertex=False
 
             else:
-                m=vertexPattern.match(l.line)
+                m=vertexPattern.match(line)
                 if m!=None:
                     toPrint=""
                     newMesh=newMesh.rstrip()
             newMesh+=toPrint+"\n"
 
-        return self.__endProcess(newMesh)
+        return newMesh
 
     def stripVertexNumber(self):
         """Remove comments after vertices"""
