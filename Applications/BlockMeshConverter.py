@@ -33,7 +33,7 @@ go over one line
         print "There is not options yet!!"
     def run(self):
         print "Program is running"
-        mesh=BlockMesh2D('blockMeshDict2D')
+        mesh=BlockMesh2D('blockMeshDict2D',"ROTATEX",-0.0174533,0.0174533,5)
         # mesh.numberVertices('Number:')
         # print mesh.convertVertices()
         # print mesh.convertBlocks()

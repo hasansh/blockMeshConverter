@@ -3,6 +3,7 @@
 
 import re,os
 import copy
+import math
 from PyFoam.Basics.LineReader import LineReader
 from PyFoam.RunDictionary.FileBasis import FileBasisBackup
 from PyFoam.RunDictionary.BlockMesh import BlockMesh
@@ -10,7 +11,10 @@ from PyFoam.RunDictionary.ParsedBlockMeshDict import ParsedBlockMeshDict
 from PyFoam.Basics.DataStructures import *
 from math import ceil
 from PyFoam.Error import error
-class BlockMeshEdge(object):
+class BlockMeshComponent(object):
+    def __init__(self, dimension):
+        self.dimension=dimension
+class BlockMeshEdge(BlockMeshComponent):
     def __init__(self, start, end, center, points):
         self.start=start
         self.end=end
@@ -36,12 +40,12 @@ class BlockMeshEdge(object):
         if self.edgeType=='spline':
             result='\t'+"spline"+' '+str(self.start)+' '+str(self.end)+"\n\t("
             for point in  self.points:
-                result+='\n\t\t\t'+"("+' '.join(str(n) for n in point)+ ")"
+                result+='\n\t\t\t'+str(point)
             result+='\n\t'+")"
         elif self.edgeType=='arc':
-            result='\t'+"arc"+' '+str(self.start)+' '+str(self.end)+"  ("+' '.join(str(n) for n in self.center)+ ")"
+            result='\t'+"arc"+' '+str(self.start)+' '+str(self.end)+' '+str(self.center)
         return result
-class BlockMeshBoundary(object):
+class BlockMeshBoundary(BlockMeshComponent):
     def __init__(self, name, boundaryType, faces):
         self.name=name
         self.boundaryType=boundaryType
@@ -59,17 +63,41 @@ class BlockMeshBoundary(object):
             result+='\n\t\t\t'+"("+' '.join(str(n) for n in face)+ ")"
         result+='\n\t\t'+");"+"\n\t}"
         return result
-
-
+class BlockMeshVertex(BlockMeshComponent):
+    def __init__(self,origin,coordinates):
+        self.coordinates=coordinates
+        self.origin=origin
+        if(len(self.coordinates) is 2):
+            self.dimension=2
+        elif(len(coordinates) is 3):
+            self.dimension=3
+        else:
+            self.dimension=None
+    def extend(self,extensionType,value):
+        newvertex=deepcopy(self)
+        if(extensionType is "EXTRUDE"):
+            newvertex.coordinates.append(value)
+        elif(extensionType is "ROTATEY"):
+            newvertex.coordinates.append(abs(self.coordinates[0]-self.origin[0])*math.sin(value))
+        elif(extensionType is "ROTATEX"):
+            newvertex.coordinates.append(abs(self.coordinates[1]-self.origin[1])*math.sin(value))
+        return newvertex
+    def __str__(self):
+        result="("+' '.join(str(n) for n in self.coordinates)+ ")"
+        return result
 class BlockMesh2D(FileBasisBackup):
-    def __init__(self, name, backup=False):
+    def __init__(self, name, extensionType, frontvalue, backvalue, ncells,backup=False):
         """:param name: The name of the parameter file
            :param backup: create a backup-copy of the file
         """
         FileBasisBackup.__init__(self,name,backup=backup)
         self.parsedBlockMesh=ParsedBlockMeshDict(name)
         self.vertexNum=len(self.parsedBlockMesh["vertices"])
-
+        self.extensionType=extensionType
+        self.frontvalue=frontvalue
+        self.backvalue=backvalue
+        self.ncells=ncells
+        self.minBound=self.getBounds()
     def convert2DBlockMesh(self):
         newMesh=self._get2DMesh()
         newMesh=self.convertVertices(newMesh)
@@ -122,12 +150,9 @@ class BlockMesh2D(FileBasisBackup):
         vertices=copy.deepcopy(verticeslist)
         newvertices=list()
         for vertice in vertices:
-            vertice.extend([0])
-            newvertices.append(vertice)
-        vertices=self.parsedBlockMesh["vertices"]
+            newvertices.append(BlockMeshVertex(self.minBound,vertice).extend(self.extensionType,self.frontvalue))
         for vertice in vertices:
-            vertice.extend([5])
-            newvertices.append(vertice)
+            newvertices.append(BlockMeshVertex(self.minBound,vertice).extend(self.extensionType,self.backvalue))
         return newvertices
     def _get2DVertexes(self):
         return self.parsedBlockMesh["vertices"]
@@ -148,7 +173,7 @@ class BlockMesh2D(FileBasisBackup):
                 newEdge=BlockMeshEdge(edgesRawList[index+1],edgesRawList[index+2],None,edgesRawList[index+3])
                 edgesList.append(newEdge)
             elif value=='arc':
-                newEdge=BlockMeshEdge(edgesRawList[index+1],edgesRawList[index+2],edgesRawList[index+3],None)
+                newEdge=BlockMeshEdge(edgesRawList[index+1],edgesRawList[index+2],BlockMeshVertex(self.minBound,edgesRawList[index+3]),None)
                 edgesList.append(newEdge)
         return edgesList
 
@@ -159,16 +184,15 @@ class BlockMesh2D(FileBasisBackup):
             if edge.edgeType=='spline':
                 pointsList=list()
                 for edgepoint in edge.points:
-                    pointsList.append(edgepoint+[5])
+                    pointsList.append(BlockMeshVertex(self.minBound,edgepoint).extend(self.extensionType,self.frontvalue))
                 newEdgesList.append(BlockMeshEdge(edge.start,edge.end,edge.center,pointsList))
                 pointsList=list()
                 for edgepoint in edge.points:
-                    pointsList.append(edgepoint+[0])
-                newEdgesList.append(BlockMeshEdge(edge.start+3,edge.end+3,edge.center,pointsList))
+                    pointsList.append(BlockMeshVertex(eself.minBound,dgepoint).extend(self.extensionType,self.backvalue))
+                newEdgesList.append(BlockMeshEdge(edge.start+self.vertexNum,edge.end+self.vertexNum,edge.center,pointsList))
             if edge.edgeType=='arc':
-                newEdgesList.append(BlockMeshEdge(edge.start,edge.end,edge.center+[0],None))
-                newEdgesList.append(BlockMeshEdge(edge.start+self.vertexNum,edge.end+self.vertexNum,edge.center+[5],None)
-)
+                newEdgesList.append(BlockMeshEdge(edge.start,edge.end,edge.center.extend(self.extensionType,self.frontvalue),None))
+                newEdgesList.append(BlockMeshEdge(edge.start+self.vertexNum,edge.end+self.vertexNum,edge.center.extend(self.extensionType,self.backvalue),None))
         return newEdgesList
     def _get2DBoundaries(self):
         boundariesRawList=self.parsedBlockMesh["boundary"]
@@ -290,7 +314,7 @@ class BlockMesh2D(FileBasisBackup):
                     m=hexPattern.match(line)
                     if m!=None:
                         g=m.groups()
-                        toPrint="\t %s %s %s%s %s%s" % (g[0],"("+' '.join(map(str,newBlocksList[count]))+")",g[2]+" 1",g[3],g[4]+" 1",g[5])
+                        toPrint="\t %s %s %s%s %s%s" % (g[0],"("+' '.join(map(str,newBlocksList[count]))+")",g[2]+" "+str(self.ncells),g[3],g[4]+" 1",g[5])
                         count=count+1
             newMesh+=toPrint+"\n"
         return self.__endProcess(newMesh)
@@ -314,7 +338,7 @@ class BlockMesh2D(FileBasisBackup):
                     inVertex=True
             elif endPattern.match(line):
                 for vert in newvertices:
-                    stringVert+="\t(".expandtabs(4)+' '.join(str(e) for e in vert)+")\n"
+                    stringVert+="\t"+str(vert)+"\n"
                 toPrint=stringVert+toPrint
                 inVertex=False
 
@@ -382,7 +406,15 @@ class BlockMesh2D(FileBasisBackup):
             newMesh+=toPrint+"\n"
 
         return self.__endProcess(newMesh,False)
-
+    def getBounds(self):
+        v=self.parsedBlockMesh["vertices"]
+        mi=[ 1e10, 1e10]
+        ma=[-1e10,-1e10]
+        for p in v:
+            for i in range(2):
+                mi[i]=min(p[i],mi[i])
+                ma[i]=max(p[i],ma[i])
+        return mi
     def __startProcess(self):
         l=LineReader(False)
         self.openFile()
@@ -400,4 +432,3 @@ class BlockMesh2D(FileBasisBackup):
             self.closeFile()
             fh.close()
             os.rename(fn,self.name)
-
