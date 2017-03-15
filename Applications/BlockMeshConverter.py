@@ -25,14 +25,64 @@ go over one line
         PyFoamApplication.__init__(self,
                                  args=args,
                                  description=description,
-                                 usage="%prog COMMAND <blockMeshDict>",
+                                 usage="%prog COMMAND <blockMeshDict2D> <value>",
                                  changeVersion=False,
+                                 nr=2,
                                  subcommands=False,
                                  **kwargs)
     def addOptions(self):
-        print "There is not options yet!!"
+        how=OptionGroup(self.parser,
+                         "Information",
+                         "Information about the case")
+        self.parser.add_option_group(how)
+        how.add_option("--extrude-positive",
+                        action="store_true",
+                        dest="expositive",
+                        default=False,
+                        help="Extrude 2D blockMesh in positive direction")
+
+        how.add_option("--extrude-negative",
+                        action="store_true",
+                        dest="exnegative",
+                        default=False,
+                        help="Extrude 2D blockMesh in negative direction")
+
+        how.add_option("--extrude-middle",
+                        action="store_true",
+                        dest="exmiddle",
+                        default=False,
+                        help="Extrude 2D blockMesh in both positive and negative directions")
+
+        how.add_option("--rotate-positive",
+                        action="store_true",
+                        dest="rtpositive",
+                        default=False,
+                        help="Rotates 2D blockMesh in positive direction")
+
+        how.add_option("--rotate-negative",
+                        action="store_true",
+                        dest="rtnegative",
+                        default=False,
+                        help="Rotates 2D blockMesh in negative direction")
+
+        how.add_option("--rotate-middle",
+                        action="store_true",
+                        dest="rtmiddle",
+                        default=False,
+                        help="Rotates 2D blockMesh in both positive and  negative directions")
     def run(self):
-        print "Program is running"
+        if self.opts.expositive:
+            print "extrude positive"
+        if self.opts.exnegative:
+            print "extrude negative"
+        if self.opts.exmiddle:
+            print "extrude middle"
+        if self.opts.rtpositive:
+            print "rotate positive"
+        if self.opts.rtnegative:
+            print "rotate negative"
+        if self.opts.rtmiddle:
+            print "rotate middle"
         mesh=BlockMesh2D('blockMeshDict2D',"ROTATEX",-0.0174533,0.0174533,5)
         # mesh.numberVertices('Number:')
         # print mesh.convertVertices()
