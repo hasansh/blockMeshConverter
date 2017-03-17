@@ -25,16 +25,19 @@ go over one line
         PyFoamApplication.__init__(self,
                                  args=args,
                                  description=description,
-                                 usage="%prog COMMAND <blockMeshDict2D> <value>",
+                                 usage="%prog <blockMeshDict2D>",
                                  changeVersion=False,
-                                 nr=2,
+                                 nr=1,
                                  subcommands=False,
                                  **kwargs)
     def addOptions(self):
         how=OptionGroup(self.parser,
-                         "Information",
-                         "Information about the case")
+                         "How",
+                         "Extursion type of 2D blockMesh")
         self.parser.add_option_group(how)
+        value=OptionGroup(self.parser,
+                          "Value",
+                          "Values of extrusion")
         how.add_option("--extrude-positive",
                         action="store_true",
                         dest="expositive",
@@ -70,9 +73,48 @@ go over one line
                         dest="rtmiddle",
                         default=False,
                         help="Rotates 2D blockMesh in both positive and  negative directions")
+        value.add_option("--front",
+                         action="store",
+                         type="float",
+                         default=0,
+                         dest="frontvalue",
+                         help="Enter the value of extrusion in positive direction")
+        value.add_option("--back",
+                         action="store",
+                         type="float",
+                         default=0,
+                         dest="backvalue",
+                         help="Enter the value of extrusion in negative direction")
+        value.add_option("--division",
+                         action="store",
+                         type="int",
+                         default=1,
+                         dest="division",
+                         help="Enter the value of extrusion in negative direction")
+        value.add_option("--dest",
+                         action="store",
+                         type="str",
+                         default="blockMeshDict",
+                         dest="destination",
+                         help="Enter the name of converted blockMeshDict")
     def run(self):
         if self.opts.expositive:
-            print "extrude positive"
+            bmFile=self.parser.getArgs()[0]
+            if not path.exists(bmFile):
+                self.error(bmFile,"not found")
+            outbmFile=path.join(path.dirname(bmFile),self.opts.destination)
+            if(self.opts.frontvalue is not 0 or self.opts.backvalue is not 0):
+                try:
+                    mesh=BlockMesh2D(self.parser.getArgs()[0],
+                                     "EXTRUDE",
+                                     -self.opts.backvalue,
+                                     self.opts.frontvalue,
+                                     self.opts.division
+                                    )
+                    open(outbmFile,"w").write(mesh.convert2DBlockMesh())
+
+                except:
+                    raise
         if self.opts.exnegative:
             print "extrude negative"
         if self.opts.exmiddle:
@@ -83,13 +125,13 @@ go over one line
             print "rotate negative"
         if self.opts.rtmiddle:
             print "rotate middle"
-        mesh=BlockMesh2D('blockMeshDict2D',"ROTATEX",-0.0174533,0.0174533,5)
-        # mesh.numberVertices('Number:')
-        # print mesh.convertVertices()
-        # print mesh.convertBlocks()
-        # print mesh.convertEdges()      
-        # print mesh.convertBoundaries()
-        print mesh.convert2DBlockMesh()
+        # mesh=BlockMesh2D('blockMeshDict2D',"ROTATEX",-8,a,5)
+       # # mesh.numberVertices('Number:')
+        # # print mesh.convertVertices()
+        # # print mesh.convertBlocks()
+        # # print mesh.convertEdges()      
+        # # print mesh.convertBoundaries()
+        # print mesh.convert2DBlockMesh()
         # for item in mesh.convertBoundaries():
             # print item
  

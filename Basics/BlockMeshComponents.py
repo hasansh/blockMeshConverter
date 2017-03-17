@@ -79,9 +79,9 @@ class BlockMeshVertex(BlockMeshComponent):
         if(extensionType is "EXTRUDE"):
             newvertex.coordinates.append(value)
         elif(extensionType is "ROTATEY"):
-            newvertex.coordinates.append(abs(self.coordinates[0]-self.origin[0])*math.sin(value))
+            newvertex.coordinates.append(abs(self.coordinates[0]-self.origin[0])*math.sin(math.radians(value)))
         elif(extensionType is "ROTATEX"):
-            newvertex.coordinates.append(abs(self.coordinates[1]-self.origin[1])*math.sin(value))
+            newvertex.coordinates.append(abs(self.coordinates[1]-self.origin[1])*math.sin(math.radians(value)))
         return newvertex
     def __str__(self):
         result="("+' '.join(str(n) for n in self.coordinates)+ ")"
