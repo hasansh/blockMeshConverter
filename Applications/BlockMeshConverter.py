@@ -38,41 +38,41 @@ go over one line
         value=OptionGroup(self.parser,
                           "Value",
                           "Values of extrusion")
-        how.add_option("--extrude-positive",
+        how.add_option("--extrude",
                         action="store_true",
-                        dest="expositive",
+                        dest="extrude",
                         default=False,
-                        help="Extrude 2D blockMesh in positive direction")
+                        help="Extrude 2D blockMesh in z direction")
 
-        how.add_option("--extrude-negative",
-                        action="store_true",
-                        dest="exnegative",
-                        default=False,
-                        help="Extrude 2D blockMesh in negative direction")
+        # how.add_option("--extrude-negative",
+                        # action="store_true",
+                        # dest="exnegative",
+                        # default=False,
+                        # help="Extrude 2D blockMesh in negative direction")
 
-        how.add_option("--extrude-middle",
-                        action="store_true",
-                        dest="exmiddle",
-                        default=False,
-                        help="Extrude 2D blockMesh in both positive and negative directions")
+        # how.add_option("--extrude-middle",
+                        # action="store_true",
+                        # dest="exmiddle",
+                        # default=False,
+                        # help="Extrude 2D blockMesh in both positive and negative directions")
 
-        how.add_option("--rotate-positive",
+        how.add_option("--rotate-x",
                         action="store_true",
-                        dest="rtpositive",
+                        dest="rotatex",
                         default=False,
-                        help="Rotates 2D blockMesh in positive direction")
+                        help="Rotates 2D blockMesh around x axis")
 
-        how.add_option("--rotate-negative",
+        how.add_option("--rotate-y",
                         action="store_true",
-                        dest="rtnegative",
+                        dest="rotatey",
                         default=False,
-                        help="Rotates 2D blockMesh in negative direction")
+                        help="Rotates 2D blockMesh around y axis")
 
-        how.add_option("--rotate-middle",
-                        action="store_true",
-                        dest="rtmiddle",
-                        default=False,
-                        help="Rotates 2D blockMesh in both positive and  negative directions")
+        # how.add_option("--rotate-middle",
+                        # action="store_true",
+                        # dest="rtmiddle",
+                        # default=False,
+                        # help="Rotates 2D blockMesh in both positive and  negative directions")
         value.add_option("--front",
                          action="store",
                          type="float",
@@ -93,38 +93,67 @@ go over one line
                          help="Enter the value of extrusion in negative direction")
         value.add_option("--dest",
                          action="store",
-                         type="str",
+                         # type="str",
                          default="blockMeshDict",
                          dest="destination",
                          help="Enter the name of converted blockMeshDict")
     def run(self):
-        if self.opts.expositive:
+        if self.opts.extrude:
+            print path.dirname(self.parser.getArgs()[0])
+            bmFile=self.parser.getArgs()[0]
+            if not path.exists(bmFile):
+                self.error(bmFile,"not found")
+            # outbmFile=path.join(path.dirname(bmFile),self.opts.destination)
+            outbmFile=self.opts.destination
+            try:
+                mesh=BlockMesh2D(self.parser.getArgs()[0],
+                                 "EXTRUDE",
+                                 -abs(self.opts.backvalue),
+                                 abs(self.opts.frontvalue),
+                                 abs(self.opts.division)
+                                )
+                open(outbmFile,"w").write(mesh.convert2DBlockMesh())
+
+            except:
+                raise
+        if self.opts.rotatex:
             bmFile=self.parser.getArgs()[0]
             if not path.exists(bmFile):
                 self.error(bmFile,"not found")
             outbmFile=path.join(path.dirname(bmFile),self.opts.destination)
-            if(self.opts.frontvalue is not 0 or self.opts.backvalue is not 0):
-                try:
-                    mesh=BlockMesh2D(self.parser.getArgs()[0],
-                                     "EXTRUDE",
-                                     -self.opts.backvalue,
-                                     self.opts.frontvalue,
-                                     self.opts.division
-                                    )
-                    open(outbmFile,"w").write(mesh.convert2DBlockMesh())
+            try:
+                mesh=BlockMesh2D(self.parser.getArgs()[0],
+                                 "ROTATEX",
+                                 -abs(self.opts.backvalue),
+                                 abs(self.opts.frontvalue),
+                                 abs(self.opts.division)
+                                )
+                open(outbmFile,"w").write(mesh.convert2DBlockMesh())
 
-                except:
-                    raise
-        if self.opts.exnegative:
-            print "extrude negative"
-        if self.opts.exmiddle:
-            print "extrude middle"
-        if self.opts.rtpositive:
-            print "rotate positive"
-        if self.opts.rtnegative:
-            print "rotate negative"
-        if self.opts.rtmiddle:
-            print "rotate middle"
+            except:
+                raise
+        if self.opts.rotatey:
+            bmFile=self.parser.getArgs()[0]
+            if not path.exists(bmFile):
+                self.error(bmFile,"not found")
+            outbmFile=path.join(path.dirname(bmFile),self.opts.destination)
+            try:
+                mesh=BlockMesh2D(self.parser.getArgs()[0],
+                                 "ROTATEY",
+                                 -abs(self.opts.backvalue),
+                                 abs(self.opts.frontvalue),
+                                 abs(self.opts.division)
+                                )
+                open(outbmFile,"w").write(mesh.convert2DBlockMesh())
+
+            except:
+                raise
+        # if self.opts.rtpositive:
+            # print "rotate positive"
+        # if self.opts.rtnegative:
+            # print "rotate negative"
+        # if self.opts.rtmiddle:
+            # print "rotate middle"
         # mesh=BlockMesh2D('blockMeshDict2D',"ROTATEX",-8,a,5)
        # # mesh.numberVertices('Number:')
         # # print mesh.convertVertices()
