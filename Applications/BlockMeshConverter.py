@@ -17,10 +17,8 @@ class BlockMeshConverter(PyFoamApplication):
                 args=None,
                  **kwargs):
         description="""\
-This utility manipulates blockMeshDict. Manipulation happens on a textual basis .
-This means that the utility assumes that the blockMeshDict is sensibly formated
-(this means for instance that there is only one block/vertex per line and they only
-go over one line
+This utility extrudes  2D blockMeshDict to 3DblockMeshDict appropriate for OpenFOAM blockMesh utility. Application requires a blockMesh2D file representing
+        the two dimensional domain and converts it to 3D domain by extruding or rotating the domain.
                 """
         PyFoamApplication.__init__(self,
                                  args=args,
@@ -44,17 +42,6 @@ go over one line
                         default=False,
                         help="Extrude 2D blockMesh in z direction")
 
-        # how.add_option("--extrude-negative",
-                        # action="store_true",
-                        # dest="exnegative",
-                        # default=False,
-                        # help="Extrude 2D blockMesh in negative direction")
-
-        # how.add_option("--extrude-middle",
-                        # action="store_true",
-                        # dest="exmiddle",
-                        # default=False,
-                        # help="Extrude 2D blockMesh in both positive and negative directions")
 
         how.add_option("--rotate-x",
                         action="store_true",
@@ -68,11 +55,6 @@ go over one line
                         default=False,
                         help="Rotates 2D blockMesh around y axis")
 
-        # how.add_option("--rotate-middle",
-                        # action="store_true",
-                        # dest="rtmiddle",
-                        # default=False,
-                        # help="Rotates 2D blockMesh in both positive and  negative directions")
         value.add_option("--front",
                          action="store",
                          type="float",
@@ -93,7 +75,6 @@ go over one line
                          help="Enter the value of extrusion in negative direction")
         value.add_option("--dest",
                          action="store",
-                         # type="str",
                          default="blockMeshDict",
                          dest="destination",
                          help="Enter the name of converted blockMeshDict")
@@ -148,35 +129,6 @@ go over one line
 
             except:
                 raise
-        # if self.opts.rtpositive:
-            # print "rotate positive"
-        # if self.opts.rtnegative:
-            # print "rotate negative"
-        # if self.opts.rtmiddle:
-            # print "rotate middle"
-        # mesh=BlockMesh2D('blockMeshDict2D',"ROTATEX",-8,a,5)
-       # # mesh.numberVertices('Number:')
-        # # print mesh.convertVertices()
-        # # print mesh.convertBlocks()
-        # # print mesh.convertEdges()      
-        # # print mesh.convertBoundaries()
-        # print mesh.convert2DBlockMesh()
-        # for item in mesh.convertBoundaries():
-            # print item
- 
-        # for boundary in mesh.convertBoundaries():
-            # if type(boundary) is DictProxy:
-                # for key, value in  boundary.items():
-                    # if type(value) is list:
-                        # print value
-
-
-
-        # for item in mesh.convertEdges():
-            # print item
-        # mesh.get2DBlocks() 
-        # for k in mesh.getVertexes():
-            # print k[0],k[1]
 
 
 
