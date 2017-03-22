@@ -1,6 +1,3 @@
-"""
-Application-class that implements pyFoamBlockMeshRewrite.py
-"""
 from optparse import OptionGroup
 from PyFoam.Applications.PyFoamApplication import PyFoamApplication
 from PyFoam.Basics.RestructuredTextHelper import RestructuredTextHelper

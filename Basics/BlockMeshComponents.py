@@ -1,6 +1,4 @@
 
-"""Manipulate a 2 Dimensional C{blockMeshDict}"""
-
 import re,os
 import copy
 import math
