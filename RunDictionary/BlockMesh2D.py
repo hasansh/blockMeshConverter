@@ -42,8 +42,6 @@ class BlockMesh2D(FileBasisBackup):
         return mesh
 
     def _getVertexes(self):
-        """Get a dictionary with the 3 components of each vertex as keys
-        and the 'raw' line as the value"""
         try:
             from collections import OrderedDict
             result=OrderedDict()
@@ -246,8 +244,6 @@ class BlockMesh2D(FileBasisBackup):
         return self.__endProcess(newMesh)
 
     def convertVertices(self, mesh):
-        """Remove comments after vertices"""
-
         startPattern=re.compile("^\s*vertices")
         endPattern=re.compile("^\s*\);")
         vertexPattern=re.compile("^(\s*\(\s*\S+\s+\S+\s*\)).*$")
