@@ -155,7 +155,6 @@ class BlockMesh2D(FileBasisBackup):
         return newBoundariesList
     def convertBoundaries(self,mesh):
         boundariesList=self._get3DBoundaries()
-        # l=self.__startProcess()
         inBoundary=False
         inFace=False
         startPattern=re.compile("^\s*boundary")
@@ -187,7 +186,6 @@ class BlockMesh2D(FileBasisBackup):
         return newMesh
     def convertEdges(self,mesh):
         newEdgesList=self._get3DEdges()
-        # l=self.__startProcess()
         inBlock=False
         startPattern=re.compile("^\s*edges")
         endPattern=re.compile("^\s*\);")
@@ -257,7 +255,6 @@ class BlockMesh2D(FileBasisBackup):
         inVertex=False
         newMesh=""
         stringVert=""
-        # l=self.__startProcess()
         count=0
         for line in  mesh.splitlines():
             toPrint=line
@@ -278,62 +275,6 @@ class BlockMesh2D(FileBasisBackup):
             newMesh+=toPrint+"\n"
 
         return newMesh
-
-    def stripVertexNumber(self):
-        """Remove comments after vertices"""
-
-        startPattern=re.compile("^\s*vertices")
-        endPattern=re.compile("^\s*\);")
-        vertexPattern=re.compile("^(\s*\(\s*\S+\s+\S+\s*\)).*$")
-        newvertices=self.getBlocks()
-        inVertex=False
-        newMesh=""
-        l=self.__startProcess()
-        count=0
-        while l.read(self.fh):
-            toPrint=l.line
-            if not inVertex:
-                if startPattern.match(l.line):
-                    inVertex=True
-            elif endPattern.match(l.line):
-                inVertex=False
-            else:
-                m=vertexPattern.match(l.line)
-                if m!=None:
-                    toPrint=m.group(1)
-            newMesh+=toPrint+"\n"
-            # count=count+1
-
-        return self.__endProcess(newMesh,True)
-
-    def numberVertices(self,prefix=""):
-        """Add comments with the number of the vertex after them
-        :param prefix: a string to add before the number"""
-
-        startPattern=re.compile("^\s*vertices")
-        endPattern=re.compile("^\s*\);")
-        vertexPattern=re.compile("^\s*\(\s*\S+\s+\S+\s*\).*$")
-
-        inVertex=False
-        newMesh=""
-        l=self.__startProcess()
-
-        cnt=0
-        while l.read(self.fh):
-            toPrint=l.line
-            if not inVertex:
-                if startPattern.match(l.line):
-                    inVertex=True
-            elif endPattern.match(l.line):
-                inVertex=False
-            else:
-                m=vertexPattern.match(l.line)
-                if m!=None:
-                    toPrint+=" \t // "+prefix+" "+str(cnt)
-                    cnt+=1
-            newMesh+=toPrint+"\n"
-
-        return self.__endProcess(newMesh,False)
     def getBounds(self):
         v=self.parsedBlockMesh["vertices"]
         mi=[ 1e10, 1e10]
