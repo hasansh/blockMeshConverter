@@ -18,17 +18,18 @@ This utility extrudes  2D blockMeshDict to 3DblockMeshDict appropriate for OpenF
         the two dimensional domain and converts it to 3D domain by extruding or rotating the domain.
                 """
         PyFoamApplication.__init__(self,
-                                 args=args,
-                                 description=description,
-                                 usage="%prog <blockMeshDict2D>",
-                                 changeVersion=False,
-                                 nr=1,
-                                 subcommands=False,
-                                 **kwargs)
+                                   args=args,
+                                   description=description,
+                                   usage="%prog <blockMeshDict2D>",
+                                   changeVersion=False,
+                                   nr=1,
+                                   interspersed=True,
+                                   subcommands=False,
+                                   **kwargs)
     def addOptions(self):
         how=OptionGroup(self.parser,
                          "How",
-                         "Extursion type of 2D blockMesh")
+                         "Extrusion type of 2D blockMesh")
         self.parser.add_option_group(how)
         value=OptionGroup(self.parser,
                           "Value",
