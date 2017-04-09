@@ -1,4 +1,3 @@
-
 """Manipulate a 2 Dimensional C{blockMeshDict}"""
 
 import re,os
@@ -14,7 +13,13 @@ from math import ceil
 from PyFoam.Error import error
 
 class BlockMesh2D(FileBasisBackup):
-    def __init__(self, name, extensionType, frontvalue, backvalue, ncells,backup=False):
+    def __init__(self,
+                 name,
+                 extensionType,
+                 frontvalue=0,
+                 backvalue=0,
+                 ncells=1,
+                 backup=False):
         """:param name: The name of the parameter file
            :param backup: create a backup-copy of the file
         """
@@ -26,6 +31,7 @@ class BlockMesh2D(FileBasisBackup):
         self.backvalue=backvalue
         self.ncells=ncells
         self.minBound=self.getBounds()
+
     def convert2DBlockMesh(self):
         newMesh=self._get2DMesh()
         newMesh=self.convertVertices(newMesh)
@@ -80,6 +86,7 @@ class BlockMesh2D(FileBasisBackup):
         for vertice in vertices:
             newvertices.append(BlockMeshVertex(self.minBound,vertice).extend(self.extensionType,self.backvalue))
         return newvertices
+
     def _get2DVertexes(self):
         return self.parsedBlockMesh["vertices"]
 
@@ -120,6 +127,7 @@ class BlockMesh2D(FileBasisBackup):
                 newEdgesList.append(BlockMeshEdge(edge.start,edge.end,edge.center.extend(self.extensionType,self.frontvalue),None))
                 newEdgesList.append(BlockMeshEdge(edge.start+self.vertexNum,edge.end+self.vertexNum,edge.center.extend(self.extensionType,self.backvalue),None))
         return newEdgesList
+
     def _get2DBoundaries(self):
         boundariesRawList=self.parsedBlockMesh["boundary"]
         boundariesList=list()
@@ -137,6 +145,7 @@ class BlockMesh2D(FileBasisBackup):
                 boundariesList.append(BlockMeshBoundary(name,boundaryType,faces))
 
         return boundariesList
+
     def _get3DBoundaries(self):
         boundariesList=self._get2DBoundaries()
         newBoundariesList=list()
@@ -182,6 +191,7 @@ class BlockMesh2D(FileBasisBackup):
                         newMesh=newMesh.rstrip()
             newMesh+=toPrint+"\n"
         return newMesh
+
     def convertEdges(self,mesh):
         newEdgesList=self._get3DEdges()
         inBlock=False
@@ -271,6 +281,7 @@ class BlockMesh2D(FileBasisBackup):
             newMesh+=toPrint+"\n"
 
         return newMesh
+
     def getBounds(self):
         v=self.parsedBlockMesh["vertices"]
         mi=[ 1e10, 1e10]
@@ -280,6 +291,7 @@ class BlockMesh2D(FileBasisBackup):
                 mi[i]=min(p[i],mi[i])
                 ma[i]=max(p[i],ma[i])
         return mi
+
     def __startProcess(self):
         l=LineReader(False)
         self.openFile()
