@@ -1,3 +1,4 @@
+"""Building blocks for a blockMeshDict"""
 
 import re,os
 import copy
@@ -13,6 +14,7 @@ from PyFoam.Error import error
 class BlockMeshComponent(object):
     def __init__(self, dimension):
         self.dimension=dimension
+
 class BlockMeshEdge(BlockMeshComponent):
     def __init__(self, start, end, center, points):
         self.start=start
@@ -44,6 +46,7 @@ class BlockMeshEdge(BlockMeshComponent):
         elif self.edgeType=='arc':
             result='\t'+"arc"+' '+str(self.start)+' '+str(self.end)+' '+str(self.center)
         return result
+
 class BlockMeshBoundary(BlockMeshComponent):
     def __init__(self, name, boundaryType, faces):
         self.name=name
@@ -62,6 +65,7 @@ class BlockMeshBoundary(BlockMeshComponent):
             result+='\n\t\t\t'+"("+' '.join(str(n) for n in face)+ ")"
         result+='\n\t\t'+");"+"\n\t}"
         return result
+
 class BlockMeshVertex(BlockMeshComponent):
     def __init__(self,origin,coordinates):
         self.coordinates=coordinates
@@ -72,14 +76,21 @@ class BlockMeshVertex(BlockMeshComponent):
             self.dimension=3
         else:
             self.dimension=None
+
     def extend(self,extensionType,value):
         newvertex=deepcopy(self)
         if(extensionType is "EXTRUDE"):
             newvertex.coordinates.append(value)
         elif(extensionType is "ROTATEY"):
-            newvertex.coordinates.append(abs(self.coordinates[0]-self.origin[0])*math.sin(math.radians(value)))
+            newvertex.coordinates.append(
+                abs(self.coordinates[0]-self.origin[0])
+                *
+                math.sin(math.radians(value)))
         elif(extensionType is "ROTATEX"):
-            newvertex.coordinates.append(abs(self.coordinates[1]-self.origin[1])*math.sin(math.radians(value)))
+            newvertex.coordinates.append(
+                abs(self.coordinates[1]-self.origin[1])
+                *
+                math.sin(math.radians(value)))
         return newvertex
     def __str__(self):
         result="("+' '.join(str(n) for n in self.coordinates)+ ")"
