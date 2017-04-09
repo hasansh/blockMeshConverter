@@ -17,9 +17,19 @@ class BlockMeshConverter(PyFoamApplication):
 This utility extrudes  2D blockMeshDict to 3DblockMeshDict appropriate for OpenFOAM blockMesh utility. Application requires a blockMesh2D file representing
         the two dimensional domain and converts it to 3D domain by extruding or rotating the domain.
                 """
+        examples="""\
+%prog blockMeshDict2D --extrude --distance-front=0.2 --distance-back=0.2 --division=10
+
+  Extrudes the 2D-mesh by 0.5 on both sides (with 10 divisions) and writes it to blockMeshDict
+
+%prog blockMeshDict2D --y-rotate --angle-front=5 --angle-back=5  --print
+
+  Rotates around the y-axis with and angle of 5 degree on both sides and prints the result to the console
+"""
         PyFoamApplication.__init__(self,
                                    args=args,
                                    description=description,
+                                   examples=examples,
                                    usage="%prog <blockMeshDict2D>",
                                    changeVersion=False,
                                    nr=1,
