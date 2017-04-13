@@ -94,6 +94,11 @@ This utility extrudes  2D blockMeshDict to 3DblockMeshDict appropriate for OpenF
                          default=1,
                          dest="division",
                          help="Number of divisions")
+        value.add_option("--front-back-type",
+                         action="store",
+                         default="empty",
+                         dest="frontAndBackType",
+                         help="Front And Back Boundaries Type")
 
         output=OptionGroup(self.parser,
                           "Output",
@@ -119,13 +124,15 @@ This utility extrudes  2D blockMeshDict to 3DblockMeshDict appropriate for OpenF
         if self.opts.extrude:
             mesh=BlockMesh2D(bmFile,
                              "EXTRUDE",
+                             self.opts.frontAndBackType,
                              -abs(self.opts.backvalue),
                              abs(self.opts.frontvalue),
-                             abs(self.opts.division)
+                             abs(self.opts.division),
             )
         elif self.opts.rotatex:
             mesh=BlockMesh2D(bmFile,
                              "ROTATEX",
+                             self.opts.frontAndBackType,
                              -abs(self.opts.backangle),
                              abs(self.opts.frontangle),
                              abs(self.opts.division)
@@ -133,9 +140,10 @@ This utility extrudes  2D blockMeshDict to 3DblockMeshDict appropriate for OpenF
         elif self.opts.rotatey:
             mesh=BlockMesh2D(bmFile,
                              "ROTATEY",
+                             self.opts.frontAndBackType,
                              -abs(self.opts.backangle),
                              abs(self.opts.frontangle),
-                             abs(self.opts.division)
+                             abs(self.opts.division),
             )
         else:
             self.error("No transformation specified: --extrude, --rotate-x or --rotate-y")

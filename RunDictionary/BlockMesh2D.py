@@ -16,6 +16,7 @@ class BlockMesh2D(FileBasisBackup):
     def __init__(self,
                  name,
                  extensionType,
+                 frontbacktype,
                  frontvalue=0,
                  backvalue=0,
                  ncells=1,
@@ -31,6 +32,7 @@ class BlockMesh2D(FileBasisBackup):
         self.backvalue=backvalue
         self.ncells=ncells
         self.minBound=self.getBounds()
+        self.frontBackType=frontbacktype
 
     def convert2DBlockMesh(self):
         newMesh=self._get2DMesh()
@@ -159,6 +161,7 @@ class BlockMesh2D(FileBasisBackup):
                 boundaryFaces.append(face)
 
             newBoundariesList.append(BlockMeshBoundary(boundary.name,boundary.boundaryType,boundaryFaces))
+        newBoundariesList.append(self._getFrontAndBackBoundaries())
         return newBoundariesList
     def convertBoundaries(self,mesh):
         boundariesList=self._get3DBoundaries()
@@ -281,6 +284,18 @@ class BlockMesh2D(FileBasisBackup):
             newMesh+=toPrint+"\n"
 
         return newMesh
+    def _getFrontAndBackBoundaries(self):
+        blocksList=self._get2DBlocks()
+        derivedBlockList=deepcopy(blocksList)
+        boundary=BlockMeshBoundary("frontAndBack",self.frontBackType,list())
+        for block in blocksList:
+            boundary.faces.append(block)
+        for block in derivedBlockList:
+            for index, vertex in enumerate(block):
+                block[index]=vertex+self.vertexNum
+            boundary.faces.append(block)
+        # for block in blocksList:
+        return boundary
 
     def getBounds(self):
         v=self.parsedBlockMesh["vertices"]
