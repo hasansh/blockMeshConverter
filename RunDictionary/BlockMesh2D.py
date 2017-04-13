@@ -294,7 +294,6 @@ class BlockMesh2D(FileBasisBackup):
             for index, vertex in enumerate(block):
                 block[index]=vertex+self.vertexNum
             boundary.faces.append(block)
-        # for block in blocksList:
         return boundary
 
     def getBounds(self):
