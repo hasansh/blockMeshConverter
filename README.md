@@ -5,4 +5,4 @@ To use it you need to create a blockMeshDict similar to standard blockMeshDict i
 ![Two dimensional block definition](/images/2DBlocks.png)
 Then using the following command you will be able to extrued or rotate 2D blockMesh to 3D blockMeshDict. 
 
-`python pyFoamBlockMeshConverter.py --extrude --front 0.5 --back 0.5 --division 5 --dest ~/path/to/desitnation /path/to/blockMesh2D`
+`python pyFoamBlockMeshConverter.py --extrude --distance-front 0.5 --distance-back 0.5 --division 5 --front-back-type wedge --dest ~/path/to/desitnation /path/to/blockMesh2D`
