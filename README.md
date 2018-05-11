@@ -1,5 +1,5 @@
 # blockMeshConverter
-BlockMeshConverter is an python application compatible with PyFoam for converting 2D BlockMeshDict to a 3d blockMesh dict appropriate for blockMesh utility of OpenFOAM. 
+BlockMeshConverter is a python application compatible with [PyFoam](https://pypi.org/project/PyFoam/0.6.5/) for converting 2D BlockMeshDict to a 3D blockMeshDict appropriate for blockMesh utility of OpenFOAM C++ ToolBox. The aim of this applications is to make the process of mesh generation easier for OpenFOAM users. This applications is released as one of the official applications of [PyFoam 0.6.9](https://github.com/Unofficial-Extend-Project-Mirror/openfoam-extend-Breeder-other-scripting-PyFoam/blob/master/ReleaseNotes)
 ## Usage
 To use it you need to create a blockMeshDict similar to standard blockMeshDict in OpenFOAM. However instead of using 3D points and blocks you need to define 2D poinst and blocks and you need to define boundaries as edges instead of faces.
 ![Two dimensional block definition](/images/2DBlocks.png)
